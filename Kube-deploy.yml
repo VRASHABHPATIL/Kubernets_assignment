@@ -1,0 +1,46 @@
+trigger:
+- main   # change branch if needed
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  awsRegion: 'us-east-1'
+  ecrRepo: '059948106103.dkr.ecr.us-east-1.amazonaws.com/kubernets/boardgame'
+  imageTag: 'latest'   # keep latest as you said
+
+stages:
+- stage: Build
+  displayName: "Build and Push Docker Image"
+  jobs:
+  - job: BuildAndPush
+    steps:
+    - checkout: self
+
+    - task: Docker@2
+      displayName: "Build and Push Docker Image to ECR"
+      inputs:
+        command: buildAndPush
+        containerRegistry: 'aws-ecr-acess'
+        repository: 'kubernets/boardgame'
+        dockerfile: '**/Dockerfile'
+        tags: |
+          $(imageTag)
+
+- stage: Deploy
+  displayName: "Deploy to EKS"
+  dependsOn: Build
+  jobs:
+  - job: DeployToEKS
+    steps:
+    - task: KubernetesManifest@1
+      displayName: "Deploy App to EKS"
+      inputs:
+        action: deploy
+        kubernetesServiceConnection: 'aws-eks-connection'
+        namespace: 'default'
+        manifests: |
+          k8s/deployment.yaml
+          k8s/service.yaml
+        containers: |
+          $(ecrRepo):$(imageTag)
