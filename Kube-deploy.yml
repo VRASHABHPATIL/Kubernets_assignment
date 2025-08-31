@@ -1,24 +1,33 @@
 trigger:
-- none   # change branch if needed
+- none   # change if your branch is different
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
   awsRegion: 'us-east-1'
+  clusterName: 'your-eks-cluster-name'   # <-- change this to your actual EKS cluster name
   ecrRepo: '059948106103.dkr.ecr.us-east-1.amazonaws.com/kubernets/boardgame'
-  imageTag: 'latest'   # keep latest as you said
+  imageTag: 'latest'   # keeping latest as you said
 
 stages:
-- stage: Build
-  displayName: "Build and Push Docker Image"
+- stage: BuildAndPush
+  displayName: "Build and Push Docker Image to ECR"
   jobs:
-  - job: BuildAndPush
+  - job: Build
     steps:
     - checkout: self
 
+    # Login to AWS ECR using Docker registry service connection
     - task: Docker@2
-      displayName: "Build and Push Docker Image to ECR"
+      displayName: "Login to AWS ECR"
+      inputs:
+        command: login
+        containerRegistry: 'aws-ecr-acess'
+
+    # Build and push image in one go
+    - task: Docker@2
+      displayName: "Build and Push Docker Image"
       inputs:
         command: buildAndPush
         containerRegistry: 'aws-ecr-acess'
@@ -28,19 +37,18 @@ stages:
           $(imageTag)
 
 - stage: Deploy
-  displayName: "Deploy to EKS"
-  dependsOn: Build
+  displayName: "Deploy to EKS with kubectl"
+  dependsOn: BuildAndPush
   jobs:
-  - job: DeployToEKS
+  - job: Deploy
     steps:
-    - task: KubernetesManifest@1
-      displayName: "Deploy App to EKS"
+    - task: AWSShellScript@1
+      displayName: "Deploy using kubectl"
       inputs:
-        action: deploy
-        kubernetesServiceConnection: 'aws-eks-connection'
-        namespace: 'default'
-        manifests: |
-          k8s/deployment.yaml
-          k8s/service.yaml
-        containers: |
-          $(ecrRepo):$(imageTag)
+        awsCredentials: 'aws-eks-connection'   # <-- must be AWS service connection
+        regionName: $(awsRegion)
+        scriptType: 'inline'
+        inlineScript: |
+          aws eks update-kubeconfig --region $(awsRegion) --name $(clusterName)
+          kubectl set image deployment/boardgame-deployment boardgame=$(ecrRepo):$(imageTag) -n default
+          kubectl apply -f k8s/deployment-service.yaml
