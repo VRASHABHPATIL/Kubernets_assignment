@@ -60,12 +60,25 @@ stages:
   - job: Deploy
     steps:
     - task: AWSShellScript@1
-      displayName: "Deploy using kubectl"
+      displayName: "Configure kubeconfig and deploy"
       inputs:
-        awsCredentials: 'aws-eks-connection'
+        awsCredentials: 'aws-eks-connection'  # must be AWS service connection with EKSAdmin IAM user
         regionName: $(awsRegion)
         scriptType: 'inline'
         inlineScript: |
+          # Generate kubeconfig for EKS
           aws eks update-kubeconfig --region $(awsRegion) --name $(clusterName)
-          kubectl set image deployment/boardgame-deployment boardgame=$(ecrRepo):$(imageTag) -n default
-          kubectl apply -f deployment-service.yaml
+
+          # Ensure kubectl uses the correct kubeconfig
+          export KUBECONFIG=$HOME/.kube/config
+
+          # Verify connectivity
+          kubectl get nodes
+
+          # Update deployment image
+          kubectl set image deployment/boardgame-deployment \
+            boardgame=$(ecrRepo):$(imageTag) -n default
+
+          # Apply manifests
+          kubectl apply -f k8s/deployment-service.yaml
+
