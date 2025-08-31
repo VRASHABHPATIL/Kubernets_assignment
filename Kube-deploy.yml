@@ -20,6 +20,13 @@ stages:
 
     # Login to AWS ECR using Docker registry service connection
 
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '21'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+
+
     - task: Maven@3
       displayName: "Build JAR with Maven"
       inputs:
