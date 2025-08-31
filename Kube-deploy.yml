@@ -19,6 +19,14 @@ stages:
     - checkout: self
 
     # Login to AWS ECR using Docker registry service connection
+
+    - task: Maven@3
+      displayName: "Build JAR with Maven"
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'package'
+        publishJUnitResults: false
+
     - task: Docker@2
       displayName: "Login to AWS ECR"
       inputs:
