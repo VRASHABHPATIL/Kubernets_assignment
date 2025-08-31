@@ -1,14 +1,14 @@
 trigger:
-- none   # change if your branch is different
+- none
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
   awsRegion: 'us-east-1'
-  clusterName: 'your-eks-cluster-name'   # <-- change this to your actual EKS cluster name
+  clusterName: 'your-eks-cluster-name'
   ecrRepo: '059948106103.dkr.ecr.us-east-1.amazonaws.com/kubernets/boardgame'
-  imageTag: 'latest'   # keeping latest as you said
+  imageTag: 'latest'
 
 stages:
 - stage: BuildAndPush
@@ -18,15 +18,14 @@ stages:
     steps:
     - checkout: self
 
-    # Login to AWS ECR using Docker registry service connection
-
+    # Install JDK 17 (compatible with Maven)
     - task: JavaToolInstaller@0
       inputs:
-        versionSpec: '21'
+        versionSpec: '17'
         jdkArchitectureOption: 'x64'
         jdkSourceOption: 'PreInstalled'
 
-
+    # Build JAR
     - task: Maven@3
       displayName: "Build JAR with Maven"
       inputs:
@@ -34,26 +33,25 @@ stages:
         goals: 'package'
         publishJUnitResults: false
 
+    # Login to AWS ECR
     - task: AWSShellScript@1
       displayName: "Login to Amazon ECR"
       inputs:
-        awsCredentials: 'aws-eks-connection'   # <-- AWS service connection of type AWS, not dockerregistry
-        regionName: 'us-east-1'
+        awsCredentials: 'aws-eks-connection'   # AWS service connection
+        regionName: $(awsRegion)
         scriptType: 'inline'
         inlineScript: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 059948106103.dkr.ecr.us-east-1.amazonaws.com
+          aws ecr get-login-password --region $(awsRegion) | docker login --username AWS --password-stdin $(ecrRepo)
 
+    # Build Docker image
+    - script: |
+        docker build -t $(ecrRepo):$(imageTag) .
+      displayName: "Build Docker Image"
 
-    # Build and push image in one go
-    - task: Docker@2
-      displayName: "Build and Push Docker Image"
-      inputs:
-        command: buildAndPush
-        containerRegistry: 'aws-ecr-acess'
-        repository: 'kubernets/boardgame'
-        dockerfile: '**/Dockerfile'
-        tags: |
-          $(imageTag)
+    # Push Docker image
+    - script: |
+        docker push $(ecrRepo):$(imageTag)
+      displayName: "Push Docker Image to ECR"
 
 - stage: Deploy
   displayName: "Deploy to EKS with kubectl"
@@ -64,7 +62,7 @@ stages:
     - task: AWSShellScript@1
       displayName: "Deploy using kubectl"
       inputs:
-        awsCredentials: 'aws-eks-connection'   # <-- must be AWS service connection
+        awsCredentials: 'aws-eks-connection'
         regionName: $(awsRegion)
         scriptType: 'inline'
         inlineScript: |
