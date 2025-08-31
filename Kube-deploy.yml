@@ -75,10 +75,6 @@ stages:
           # Verify connectivity
           kubectl get nodes
 
-          # Update deployment image
-          kubectl set image deployment/boardgame-deployment \
-            boardgame=$(ecrRepo):$(imageTag) -n default
-
           # Apply manifests
-          kubectl apply -f k8s/deployment-service.yaml
+          kubectl apply -f deployment-service.yaml
 
