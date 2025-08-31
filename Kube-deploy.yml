@@ -6,7 +6,7 @@ pool:
 
 variables:
   awsRegion: 'us-east-1'
-  clusterName: 'your-eks-cluster-name'
+  clusterName: 'KubernetsPractice'
   ecrRepo: '059948106103.dkr.ecr.us-east-1.amazonaws.com/kubernets/boardgame'
   imageTag: 'latest'
 
@@ -68,4 +68,4 @@ stages:
         inlineScript: |
           aws eks update-kubeconfig --region $(awsRegion) --name $(clusterName)
           kubectl set image deployment/boardgame-deployment boardgame=$(ecrRepo):$(imageTag) -n default
-          kubectl apply -f k8s/deployment-service.yaml
+          kubectl apply -f deployment-service.yaml
