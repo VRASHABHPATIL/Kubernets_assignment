@@ -41,6 +41,27 @@ stages:
 
 
     - script: |
+        # Create Maven settings.xml with Nexus credentials
+        mkdir -p ~/.m2
+        cat > ~/.m2/settings.xml << EOF
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 
+                                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <servers>
+            <server>
+              <id>nexus</id>
+              <username>$(NEXUS_USER)</username>
+              <password>$(NEXUS_PASSWORD)</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+        
+        echo "Maven settings.xml created successfully"
+      displayName: 'Configure Maven Settings'
+
+    - script: |
         for jar in target/*.jar; do
           echo "Deploying $jar to Nexus..."
           mvn deploy:deploy-file \
@@ -52,9 +73,7 @@ stages:
             -DrepositoryId=nexus \
             -Durl=$(NEXUS_URL) \
             -DrepositoryLayout=default \
-            -DgeneratePom=true \
-            -Dusername=$(NEXUS_USER) \
-            -Dpassword=$(NEXUS_PASSWORD)
+            -DgeneratePom=true
         done
       displayName: 'Upload JARs to Nexus'
 
