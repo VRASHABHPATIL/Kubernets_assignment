@@ -26,12 +26,6 @@ stages:
         jdkSourceOption: 'PreInstalled'
 
 
-    - script: |
-        echo "Testing Nexus connection..."
-        curl -u "$(NEXUS_USER):$(NEXUS_PASSWORD)" -I "$(NEXUS_URL)"
-      displayName: 'Test Nexus Connection'
-
-
     - task: Maven@3
       displayName: "Build JAR with Maven"
       inputs:
@@ -64,9 +58,14 @@ stages:
     - script: |
         for jar in target/*.jar; do
           echo "Deploying $jar to Nexus..."
+          # Extract the base artifact name without SNAPSHOT suffix
+          base_name=$(basename "$jar" .jar)
+          # Remove the -0.0.7-SNAPSHOT part and use a release version
+          artifact_id=$(echo "$base_name" | sed 's/-[0-9].*-SNAPSHOT//')
+          
           mvn deploy:deploy-file \
             -DgroupId=com.example \
-            -DartifactId=$(basename "$jar" .jar) \
+            -DartifactId="$artifact_id" \
             -Dversion=1.0.0 \
             -Dpackaging=jar \
             -Dfile="$jar" \
