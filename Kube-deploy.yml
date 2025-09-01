@@ -44,11 +44,11 @@ stages:
             -Dpackaging=jar \
             -Dfile="$jar" \
             -DrepositoryId=nexus \
-            -Durl="${NEXUS_URL}" \
+            -Durl=$(NEXUS_URL) \
             -DrepositoryLayout=default \
             -DgeneratePom=true \
-            -Dusername="${NEXUS_USER}" \
-            -Dpassword="${NEXUS_PASSWORD}"
+            -Dusername=$(NEXUS_USER) \
+            -Dpassword=$(NEXUS_PASSWORD)
         done
       displayName: 'Upload JARs to Nexus'
 
