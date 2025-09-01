@@ -26,6 +26,12 @@ stages:
         jdkSourceOption: 'PreInstalled'
 
 
+    - script: |
+        echo "Testing Nexus connection..."
+        curl -u "$(NEXUS_USER):$(NEXUS_PASSWORD)" -I "$(NEXUS_URL)"
+      displayName: 'Test Nexus Connection'
+
+
     - task: Maven@3
       displayName: "Build JAR with Maven"
       inputs:
