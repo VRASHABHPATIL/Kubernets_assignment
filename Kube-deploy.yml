@@ -33,6 +33,20 @@ stages:
         goals: 'package'
         publishJUnitResults: false
 
+    - task: SonarCloudPrepare@3
+      inputs:
+        SonarQube: 'SonarcubeAcess'
+        organization: 'devopspracticeitt'
+        scannerMode: 'other'
+
+    - task: SonarCloudAnalyze@3
+      inputs:
+        jdkversion: 'JAVA_HOME_21_X64'
+
+    - task: SonarCloudPublish@3
+      inputs:
+        pollingTimeoutSec: '300'
+
     # Login to AWS ECR
     - task: AWSShellScript@1
       displayName: "Login to Amazon ECR"
