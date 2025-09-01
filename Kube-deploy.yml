@@ -37,7 +37,11 @@ stages:
       inputs:
         SonarQube: 'SonarcubeAcess'
         organization: 'devopspracticeitt'
-        scannerMode: 'other'
+        scannerMode: 'cli'
+        configMode: 'manual'
+        cliProjectKey: 'devopspracticeitt'
+        cliProjectName: 'DevOpsPracticeITT_Kubernets_Assignment'
+        cliSources: '.'
 
     - task: SonarCloudAnalyze@3
       inputs:
