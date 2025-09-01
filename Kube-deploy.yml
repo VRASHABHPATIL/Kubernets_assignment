@@ -1,5 +1,5 @@
 trigger:
-- none
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -18,14 +18,14 @@ stages:
     steps:
     - checkout: self
 
-    # Install JDK 17 (compatible with Maven)
+  
     - task: JavaToolInstaller@0
       inputs:
         versionSpec: '21'
         jdkArchitectureOption: 'x64'
         jdkSourceOption: 'PreInstalled'
 
-    # Build JAR
+
     - task: Maven@3
       displayName: "Build JAR with Maven"
       inputs:
@@ -51,22 +51,21 @@ stages:
       inputs:
         pollingTimeoutSec: '300'
 
-    # Login to AWS ECR
+
     - task: AWSShellScript@1
       displayName: "Login to Amazon ECR"
       inputs:
-        awsCredentials: 'aws-eks-connection'   # AWS service connection
+        awsCredentials: 'aws-eks-connection'  
         regionName: $(awsRegion)
         scriptType: 'inline'
         inlineScript: |
           aws ecr get-login-password --region $(awsRegion) | docker login --username AWS --password-stdin $(ecrRepo)
 
-    # Build Docker image
+
     - script: |
         docker build -t $(ecrRepo):$(imageTag) .
       displayName: "Build Docker Image"
 
-    # Push Docker image
     - script: |
         docker push $(ecrRepo):$(imageTag)
       displayName: "Push Docker Image to ECR"
@@ -80,7 +79,7 @@ stages:
     - task: AWSShellScript@1
       displayName: "Configure kubeconfig and deploy"
       inputs:
-        awsCredentials: 'aws-eks-connection'  # must be AWS service connection with EKSAdmin IAM user
+        awsCredentials: 'aws-eks-connection' 
         regionName: $(awsRegion)
         scriptType: 'inline'
         inlineScript: |
