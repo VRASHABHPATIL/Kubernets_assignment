@@ -33,6 +33,25 @@ stages:
         goals: 'package'
         publishJUnitResults: false
 
+
+    - script: |
+        for jar in target/*.jar; do
+          echo "Deploying $jar to Nexus..."
+          mvn deploy:deploy-file \
+            -DgroupId=com.example \
+            -DartifactId=$(basename $jar .jar) \
+            -Dversion=1.0.0 \
+            -Dpackaging=jar \
+            -Dfile=$jar \
+            -DrepositoryId=nexus \
+            -Durl=$(NEXUS_URL) \
+            -DrepositoryLayout=default \
+            -DgeneratePom=true \
+            -Dusername=$(NEXUS_USER) \
+            -Dpassword=$(NEXUS_PASSWORD)
+        done
+      displayName: 'Upload JARs to Nexus'
+
     - task: SonarCloudPrepare@3
       inputs:
         SonarQube: 'SonarcubeAcess'
