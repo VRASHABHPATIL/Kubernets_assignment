@@ -1,0 +1,16 @@
+grafana:
+  adminPassword: "admin"
+  service:
+    type: LoadBalancer   # Expose Grafana externally
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    retention: 15d        # Keep metrics for 15 days
+    resources:
+      requests:
+        memory: 400Mi
+        cpu: 200m
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true
