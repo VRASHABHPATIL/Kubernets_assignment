@@ -1,11 +1,9 @@
 
-````markdown
 # Kubernetes Assignment 🚀
 
 This project demonstrates how to containerize, analyze, and deploy an application on a Kubernetes cluster hosted in **AWS**.  
 It also integrates **Nexus Repository (EC2)**, **SonarCloud** for code analysis, and **Prometheus + Grafana** for monitoring.
 
----
 
 ## 📌 Architecture Overview
 - **AWS EKS Cluster** – Hosts the Kubernetes workloads  
@@ -127,5 +125,4 @@ kubectl delete -f service.yml
 eksctl delete cluster --name kubernetes-assignment
 ```
 
-```
 
