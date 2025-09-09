@@ -109,7 +109,7 @@ kubectl port-forward svc/prometheus-service 9090:9090
 docker build -t <ecr-repo-url>/kubernetes-app:latest .
 docker push <ecr-repo-url>/kubernetes-app:latest
 
-# Update the deployment.yml to use the pushed image
+# Update the deployment-service.yml to use the pushed image
 # Apply the manifests
 kubectl apply -f deployment-service.yml
 ```
