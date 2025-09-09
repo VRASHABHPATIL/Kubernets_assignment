@@ -89,13 +89,11 @@ mvn sonar:sonar \
 
 ---
 
-## 🚀 Step 4: Setup Prometheus Monitoring
+## 🚀 Step 4: Setup Prometheus and Grafana for Monitoring
 
 ```bash
 # Deploy Prometheus to Kubernetes
-kubectl apply -f prometheus-config.yaml
-kubectl apply -f prometheus-deployment.yaml
-kubectl apply -f prometheus-service.yaml
+kubectl apply -f promethious-grafana.yml
 
 # Access Prometheus UI
 kubectl port-forward svc/prometheus-service 9090:9090
@@ -110,8 +108,8 @@ kubectl port-forward svc/prometheus-service 9090:9090
 
 ```bash
 # Build and push your Docker image (to Nexus or DockerHub)
-docker build -t <nexus-repo-url>/kubernetes-app:latest .
-docker push <nexus-repo-url>/kubernetes-app:latest
+docker build -t <ecr-repo-url>/kubernetes-app:latest .
+docker push <ecr-repo-url>/kubernetes-app:latest
 
 # Update the deployment.yml to use the pushed image
 # Apply the manifests
@@ -131,6 +129,3 @@ eksctl delete cluster --name kubernetes-assignment
 
 ```
 
-
-Do you also want me to add a **final step for Grafana setup** (since you mentioned Prometheus + Grafana) so that the README looks 100% complete for monitoring setup?
-```
